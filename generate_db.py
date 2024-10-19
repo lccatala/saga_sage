@@ -1,5 +1,6 @@
 import os
 import shutil
+import argparse
 
 from dotenv import load_dotenv
 from langchain_community.document_loaders import UnstructuredEPubLoader
@@ -49,7 +50,7 @@ def _split_text(documents: list[Document]) -> list[Document]:
     print(f"Split {len(documents)} documents into {len(chunks)} chunks")
     return chunks
 
-def create_database(books_dir: str) -> None:
+def create_database(books_dir: str, db_dir: str) -> None:
     book_list = _load_books(books_dir)
     chunks = []
     for book_documents in book_list:
@@ -61,10 +62,6 @@ def create_database(books_dir: str) -> None:
     if api_key is None:
         print("Could not find an environment variable OPENAI_API_KEY with your OpenAI API key")
         exit()
-    db_dir = os.getenv("DB_DIR")
-    if db_dir is None:
-        print(f"DB_DIR environment variable not defined. Please use it to specify a directory for your vector database")
-        exit()
 
     if os.path.exists(db_dir):
         shutil.rmtree(db_dir)
@@ -74,5 +71,9 @@ def create_database(books_dir: str) -> None:
 
 
 if __name__ == "__main__":
-    create_database("books")
+    parser = argparse.ArgumentParser(description="Generate embeddings database")
+    parser.add_argument("--db_dir", type=str, default="chroma", help="Directory path for the database to generate")
+    args = parser.parse_args()
+
+    create_database("books", args.db_dir)
 

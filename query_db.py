@@ -1,21 +1,18 @@
 import os
-from dotenv import load_dotenv
+import argparse
 
+from dotenv import load_dotenv
 from langchain_chroma import Chroma
 from langchain_openai import OpenAIEmbeddings
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 
 
-def ask_question(question_text: str, min_similarity: float = 0.7) -> dict[str, str | list[str]]:
+def ask_question(question_text: str, db_dir: str, min_similarity: float = 0.7) -> dict[str, str | list[str]]:
     load_dotenv()
     api_key = os.getenv("OPENAI_API_KEY")
     if api_key is None:
         print("Could not find an OpenAI API key")
-        exit()
-    db_dir = os.getenv("DB_DIR")
-    if db_dir is None:
-        print(f"DB_DIR environment variable not defined. Please specify a directory for your vector database")
         exit()
 
     embedding_function = OpenAIEmbeddings()
@@ -41,11 +38,15 @@ def ask_question(question_text: str, min_similarity: float = 0.7) -> dict[str, s
 
     model = ChatOpenAI()
     response_text = model.predict(prompt)
-    sources = [doc.metadata.get("source", None) for doc, score in results]
+    sources = [doc.metadata.get("source", None) for doc, _ in results]
 
     return {"answer":response_text, "sources":sources}
 
 if __name__ == "__main__":
-    question = "What is the river?"
-    answer = ask_question(question)
+    parser = argparse.ArgumentParser(description="Ask a question using the generated database from the books you provided")
+    parser.add_argument("--db_dir", type=str, default="chroma", help="Directory path for the generated database")
+    parser.add_argument("--question", type=str, default="chroma", help="Question to ask the system related to the books you provided")
+    args = parser.parse_args()
+
+    answer = ask_question(args.question, args.db_dir)
     print(answer)

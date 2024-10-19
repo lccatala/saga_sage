@@ -13,4 +13,28 @@ Another thing to try is having it be capable of extracting "implicit" informatio
 - Character B had a kid (nobody knows who it is)
 - Character B swapped eye color with character C
 - Character A has the same eye color as character C
+
 From here we can interpret that A is B's offspring, however a basic RAG would have problems concluding that. Different approaches I might follow are experimenting with context and chunk sizes and some summarizing strategy, where I store embeddings summaries of chapters or key sections along with the ones from raw text.
+
+## Usage
+Start by creating a virtual environment
+```
+python3 -m venv .venv
+```
+Install dependencies
+```
+pip install -r requirements.txt
+```
+
+Define an environment variable called `OPENAI_API_KEY` with your OpenAI API key (duh), and a `DB_DIR` with the directory where you want to store your embeddings. These can go either in your shell environment or in a .env file.
+
+Put the .epub files you want to extract knowledge from in a "books" directory.
+
+Generate the embeddings database
+```
+python3 generate_db.py --db_dir /path/to/database/directory
+```
+Query the database with your question
+```
+python3 query_db.py --question <your question>
+```
