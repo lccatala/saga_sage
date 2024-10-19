@@ -7,3 +7,10 @@ This poses a problem: we may forget important details or story bits during the p
 
 ## Implementation
 I'm starting off with a typical system built using Langchain and OpenAI embeddings stored in a Chroma database. I expect some improvements to come from trying different models for both embeddings and chat, but mostly from how I built the database. Linear fiction series have distinct characteristics from other types of documents, since more recent pieces of context are usually correct when they contradict older ones. Thus, my initial aim is to find a way of biasing the system toward pieces of text relevant to the input question that appear as late as possible in the text.
+
+Another thing to try is having it be capable of extracting "implicit" information that's not directly stated in the text, but that would be relatively easy to discern for a human being. For example, if at 3 separate points in a book we see:
+- Character A is an orphan
+- Character B had a kid (nobody knows who it is)
+- Character B swapped eye color with character C
+- Character A has the same eye color as character C
+From here we can interpret that A is B's offspring, however a basic RAG would have problems concluding that. Different approaches I might follow are experimenting with context and chunk sizes and some summarizing strategy, where I store embeddings summaries of chapters or key sections along with the ones from raw text.
