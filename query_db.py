@@ -1,27 +1,54 @@
 import os
+import sys
 import argparse
+import operator
 
 from dotenv import load_dotenv
 from langchain_chroma import Chroma
 from langchain_openai import OpenAIEmbeddings
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.documents.base import Document
 
+def search_by_position_and_similarity(vector_store: Chroma, question_text: str, k: int = 3) -> list[tuple[Document, float]]:
+    results = vector_store.similarity_search_with_relevance_scores(question_text, k=k)
+    # Sort based on the start_index in the Document's metadata
+    sorted_results = sorted(results, key=lambda x: x[0].metadata.get("start_index", 0), reverse=True)
+    return sorted_results
+    # results_data: list[tuple] = []
+    # results = vector_store.similarity_search_with_relevance_scores(question_text, k=k)
+    # for doc, score in results:
+    #     position: int = doc.metadata.get("start_index", 0)
+    #     source: str = doc.metadata.get("source", "Unknown")
+    #     result_doc: Document = Document(doc.page_content, score=score, source=source)
+    #     results_data.append(result_doc)
+    #
+    # sorted_results = sorted(results_data, key=operator.__getitem__, reverse=True) 
+    # return sorted_results
 
-def ask_question(question_text: str, db_dir: str, min_similarity: float = 0.7) -> dict[str, str | list[str]]:
-    load_dotenv()
+def ask_question(
+    question_text: str, 
+    db_root_dir: str, 
+    min_similarity: float = 0.7,
+    max_context_pieces: int = 5
+) -> dict[str, str | list[str]]:
     api_key = os.getenv("OPENAI_API_KEY")
     if api_key is None:
-        print("Could not find an OpenAI API key")
-        exit()
+        sys.exit("Could not find an OpenAI API key")
 
     embedding_function = OpenAIEmbeddings()
-    db = Chroma(persist_directory=db_dir, embedding_function=embedding_function)
-
-    results = db.similarity_search_with_relevance_scores(question_text, k=5)
+    book_directories = os.listdir(db_root_dir)
+    results = []
+    for book_dir in book_directories:
+        book_db_path = os.path.join(db_root_dir, book_dir)
+        db = Chroma(persist_directory=book_db_path, embedding_function=embedding_function)
+        book_results = search_by_position_and_similarity(db, question_text, k=3)
+        results.extend(book_results)
+        if len(results) >= max_context_pieces:
+            results = results[:max_context_pieces]
+            break
     if len(results) == 0 or results[0][1] < min_similarity:
-        print(f"Could not find relevant results")
-        exit()
+        sys.exit(f"Could not find relevant results")
 
     context_text = "\n\n---\n\n".join([doc.page_content for doc, _ in results])
 
@@ -43,10 +70,13 @@ def ask_question(question_text: str, db_dir: str, min_similarity: float = 0.7) -
     return {"answer":response_text, "sources":sources}
 
 if __name__ == "__main__":
+    load_dotenv()
+
     parser = argparse.ArgumentParser(description="Ask a question using the generated database from the books you provided")
     parser.add_argument("--db_dir", type=str, default="chroma", help="Directory path for the generated database")
-    parser.add_argument("--question", type=str, default="chroma", help="Question to ask the system related to the books you provided")
+    parser.add_argument("--question", type=str, default="What is the River?", help="Question to ask the system related to the books you provided")
     args = parser.parse_args()
 
+
     answer = ask_question(args.question, args.db_dir)
-    print(answer)
+    print(answer["answer"])
