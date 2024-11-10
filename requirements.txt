@@ -23,6 +23,7 @@ dataclasses-json==0.6.7
 Deprecated==1.2.14
 distro==1.9.0
 durationpy==0.9
+EbookLib==0.18
 emoji==2.14.0
 eval_type_backport==0.2.0
 fastapi==0.115.2
