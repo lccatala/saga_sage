@@ -115,6 +115,7 @@ def create_database(books_dir: str, db_dir: str) -> None:
 
     if os.path.exists(db_dir):
         shutil.rmtree(db_dir)
+        os.mkdir(db_dir)
 
     total_chunks = 0
     for i, book_documents in enumerate(book_list):

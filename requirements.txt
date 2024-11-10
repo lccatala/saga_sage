@@ -108,6 +108,7 @@ python-dateutil==2.8.2
 python-dotenv==1.0.1
 python-iso639==2024.4.27
 python-magic==0.4.27
+python-multipart==0.0.17
 python-oxmsg==0.0.1
 PyYAML==6.0.2
 RapidFuzz==3.10.0

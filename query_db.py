@@ -40,8 +40,14 @@ def ask_question(
     book_directories = os.listdir(db_root_dir)
     results = []
     for book_dir in book_directories:
+        print("1")
         book_db_path = os.path.join(db_root_dir, book_dir)
-        db = Chroma(persist_directory=book_db_path, embedding_function=embedding_function)
+        print(book_db_path)
+        try:
+            db = Chroma(persist_directory=book_db_path, embedding_function=embedding_function)
+        except Exception as e:
+            sys.exit(str(e))
+        print("3")
         book_results = search_by_position_and_similarity(db, question_text, k=3)
         results.extend(book_results)
         if len(results) >= max_context_pieces:
