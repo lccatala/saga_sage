@@ -1,4 +1,5 @@
 import os
+import sys
 import shutil
 import argparse
 
@@ -106,13 +107,11 @@ def _split_text(documents: list[Document]) -> list[Document]:
 def create_database(books_dir: str, db_dir: str) -> None:
     book_list = _load_books(books_dir)
     if len(book_list) == 0:
-        print("Error: you did not provide any books")
-        exit()
+        sys.exit("Error: you did not provide any books")
 
     api_key = os.getenv("OPENAI_API_KEY")
     if api_key is None:
-        print("Could not find an environment variable OPENAI_API_KEY with your OpenAI API key")
-        exit()
+        sys.exit("Could not find an environment variable OPENAI_API_KEY with your OpenAI API key")
 
     if os.path.exists(db_dir):
         shutil.rmtree(db_dir)
