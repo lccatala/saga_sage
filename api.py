@@ -32,6 +32,8 @@ DB_DIR =  "chroma"
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    load_dotenv()
+
     os.makedirs(UPLOAD_DIR, exist_ok=True)
     yield
     for filename in os.listdir(UPLOAD_DIR):
@@ -108,9 +110,7 @@ async def ask(request: QuestionRequest):
         if n_books != n_dbs or n_dbs == 0: 
             create_database(UPLOAD_DIR, DB_DIR)
 
-        print("Asking...")
         answer_dict = ask_question(request.question, DB_DIR)
-        print("Asked")
         question_response = QuestionResponse(
             answer=str(answer_dict["answer"]), 
             sources=list(answer_dict["sources"]))
